@@ -19,11 +19,11 @@ class OsticketApiPlusPlugin extends Plugin
 
     /**
      * Side-loaded instance config captured during bootstrap.
-     * PluginManager clears $plugin->config after bootstrap, so we must keep our own copy.
+     * Named separately from Plugin::$config; PluginManager nulls that after boot.
      *
      * @var OsticketApiPlusConfig|null
      */
-    private static $config = null;
+    private static $cachedInstanceConfig = null;
 
     public function bootstrap()
     {
@@ -31,7 +31,7 @@ class OsticketApiPlusPlugin extends Plugin
         // Capture before PluginManager nulls $this->config after all instances boot.
         $sideLoaded = $this->getConfig();
         if ($sideLoaded) {
-            self::$config = $sideLoaded;
+            self::$cachedInstanceConfig = $sideLoaded;
         }
         require_once __DIR__ . '/api.php';
         Signal::connect('api', array('OsticketApiPlusPlugin', 'onApiDispatch'));
@@ -42,8 +42,8 @@ class OsticketApiPlusPlugin extends Plugin
      */
     public static function conf()
     {
-        if (self::$config) {
-            return self::$config;
+        if (self::$cachedInstanceConfig) {
+            return self::$cachedInstanceConfig;
         }
 
         if (!self::$instance) {
@@ -55,8 +55,8 @@ class OsticketApiPlusPlugin extends Plugin
             foreach (self::$instance->getActiveInstances() as $pluginInstance) {
                 $conf = $pluginInstance->getConfig();
                 if ($conf) {
-                    self::$config = $conf;
-                    return self::$config;
+                    self::$cachedInstanceConfig = $conf;
+                    return self::$cachedInstanceConfig;
                 }
             }
         }
