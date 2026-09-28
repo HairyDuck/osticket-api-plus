@@ -20,13 +20,13 @@ class OsticketApiPlusConfig extends PluginConfig
                 'id'      => 'enable_staff_api',
                 'label'   => 'Enable staff API',
                 'default' => false,
-                'hint'    => 'List any tickets, staff replies, status changes, and internal notes. Leave disabled until configured.',
+                'hint'    => 'List tickets, reply, notes, status, assign, priority, topic, and catalogues. Leave disabled until configured.',
             )),
             'staff_username' => new TextboxField(array(
                 'id'       => 'staff_username',
                 'label'    => 'Staff username for staff replies',
                 'required' => false,
-                'hint'     => 'Existing agent username used as author for staff reply / note / status actions.',
+                'hint'     => 'Existing agent username used as author for staff API actions (reply, note, status, assign, and claim).',
                 'configuration' => array('length' => 64, 'size' => 40),
             )),
             'default_list_limit' => new TextboxField(array(

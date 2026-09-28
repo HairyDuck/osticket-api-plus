@@ -77,7 +77,97 @@ class OsticketApiPlusPlugin extends Plugin
                 return;
             }
 
-            // Staff (specific paths first). Method-locked so GET cannot hit reply/status/note.
+            // Health (no staff/user toggle)
+            $dispatcher->append(
+                url_get(
+                    '^/api-plus/health\.json$',
+                    array('OsticketApiPlusController', 'health')
+                )
+            );
+
+            // Staff catalogues (specific paths before ticket id routes)
+            $dispatcher->append(
+                url_get(
+                    '^/api-plus/staff/statuses\.json$',
+                    array('OsticketApiPlusController', 'staffStatuses')
+                )
+            );
+            $dispatcher->append(
+                url_get(
+                    '^/api-plus/staff/depts\.json$',
+                    array('OsticketApiPlusController', 'staffDepts')
+                )
+            );
+            $dispatcher->append(
+                url_get(
+                    '^/api-plus/staff/staff\.json$',
+                    array('OsticketApiPlusController', 'staffDirectory')
+                )
+            );
+            $dispatcher->append(
+                url_get(
+                    '^/api-plus/staff/canned\.json$',
+                    array('OsticketApiPlusController', 'staffCanned')
+                )
+            );
+            $dispatcher->append(
+                url_get(
+                    '^/api-plus/staff/priorities\.json$',
+                    array('OsticketApiPlusController', 'staffPriorities')
+                )
+            );
+            $dispatcher->append(
+                url_get(
+                    '^/api-plus/staff/topics\.json$',
+                    array('OsticketApiPlusController', 'staffTopics')
+                )
+            );
+
+            // Staff by public ticket number
+            $dispatcher->append(
+                url_post(
+                    '^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/reply\.json$',
+                    array('OsticketApiPlusController', 'staffReplyByNumber')
+                )
+            );
+            $dispatcher->append(
+                url_post(
+                    '^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/status\.json$',
+                    array('OsticketApiPlusController', 'staffStatusByNumber')
+                )
+            );
+            $dispatcher->append(
+                url_post(
+                    '^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/note\.json$',
+                    array('OsticketApiPlusController', 'staffNoteByNumber')
+                )
+            );
+            $dispatcher->append(
+                url_post(
+                    '^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/assign\.json$',
+                    array('OsticketApiPlusController', 'staffAssignByNumber')
+                )
+            );
+            $dispatcher->append(
+                url_post(
+                    '^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/priority\.json$',
+                    array('OsticketApiPlusController', 'staffPriorityByNumber')
+                )
+            );
+            $dispatcher->append(
+                url_post(
+                    '^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/topic\.json$',
+                    array('OsticketApiPlusController', 'staffTopicByNumber')
+                )
+            );
+            $dispatcher->append(
+                url_get(
+                    '^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)\.json$',
+                    array('OsticketApiPlusController', 'staffGetTicketByNumber')
+                )
+            );
+
+            // Staff by internal id
             $dispatcher->append(
                 url_post(
                     '^/api-plus/staff/tickets/(?P<id>\d+)/reply\.json$',
@@ -94,6 +184,24 @@ class OsticketApiPlusPlugin extends Plugin
                 url_post(
                     '^/api-plus/staff/tickets/(?P<id>\d+)/note\.json$',
                     array('OsticketApiPlusController', 'staffNote')
+                )
+            );
+            $dispatcher->append(
+                url_post(
+                    '^/api-plus/staff/tickets/(?P<id>\d+)/assign\.json$',
+                    array('OsticketApiPlusController', 'staffAssign')
+                )
+            );
+            $dispatcher->append(
+                url_post(
+                    '^/api-plus/staff/tickets/(?P<id>\d+)/priority\.json$',
+                    array('OsticketApiPlusController', 'staffPriority')
+                )
+            );
+            $dispatcher->append(
+                url_post(
+                    '^/api-plus/staff/tickets/(?P<id>\d+)/topic\.json$',
+                    array('OsticketApiPlusController', 'staffTopic')
                 )
             );
             $dispatcher->append(

@@ -46,17 +46,60 @@ if (!is_array($plugin) || empty($plugin['plugin'])) {
 } else {
     ok('plugin.php metadata');
 }
+if (empty($plugin['version']) || $plugin['version'] !== '1.1.0') {
+    fail('plugin version expected 1.1.0');
+} else {
+    ok('plugin version 1.1.0');
+}
 if (stripos(json_encode($plugin), 'cursor') !== false) {
     fail('plugin metadata must not mention Cursor');
 } else {
     ok('no Cursor mention in plugin metadata');
 }
+if (stripos(json_encode($plugin), 'synthetix') !== false) {
+    fail('plugin metadata must not mention Synthetix');
+} else {
+    ok('no Synthetix mention in plugin metadata');
+}
+
+$readme = file_get_contents($root . '/README.md');
+if ($readme === false) {
+    fail('README.md missing');
+} else {
+    if (stripos($readme, 'Features we will consider if requested') === false) {
+        fail('README missing consider-if-requested section');
+    } else {
+        ok('README consider-if-requested section');
+    }
+    if (stripos($readme, 'synthetix') !== false) {
+        fail('README must not mention Synthetix');
+    } else {
+        ok('README brand-neutral');
+    }
+}
 
 // Route regexes must match real dispatcher paths (named groups become positional args)
 $routes = array(
+    array('^/api-plus/health\.json$', '/api-plus/health.json', array()),
+    array('^/api-plus/staff/statuses\.json$', '/api-plus/staff/statuses.json', array()),
+    array('^/api-plus/staff/depts\.json$', '/api-plus/staff/depts.json', array()),
+    array('^/api-plus/staff/staff\.json$', '/api-plus/staff/staff.json', array()),
+    array('^/api-plus/staff/canned\.json$', '/api-plus/staff/canned.json', array()),
+    array('^/api-plus/staff/priorities\.json$', '/api-plus/staff/priorities.json', array()),
+    array('^/api-plus/staff/topics\.json$', '/api-plus/staff/topics.json', array()),
+    array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/reply\.json$', '/api-plus/staff/tickets/by-number/23833/reply.json', array('23833')),
+    array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/status\.json$', '/api-plus/staff/tickets/by-number/23833/status.json', array('23833')),
+    array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/note\.json$', '/api-plus/staff/tickets/by-number/23833/note.json', array('23833')),
+    array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/assign\.json$', '/api-plus/staff/tickets/by-number/23833/assign.json', array('23833')),
+    array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/priority\.json$', '/api-plus/staff/tickets/by-number/23833/priority.json', array('23833')),
+    array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/topic\.json$', '/api-plus/staff/tickets/by-number/23833/topic.json', array('23833')),
+    array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)\.json$', '/api-plus/staff/tickets/by-number/23833.json', array('23833')),
     array('^/api-plus/staff/tickets/(?P<id>\d+)/reply\.json$', '/api-plus/staff/tickets/42/reply.json', array('42')),
     array('^/api-plus/staff/tickets/(?P<id>\d+)/status\.json$', '/api-plus/staff/tickets/42/status.json', array('42')),
     array('^/api-plus/staff/tickets/(?P<id>\d+)/note\.json$', '/api-plus/staff/tickets/7/note.json', array('7')),
+    array('^/api-plus/staff/tickets/(?P<id>\d+)/assign\.json$', '/api-plus/staff/tickets/42/assign.json', array('42')),
+    array('^/api-plus/staff/tickets/(?P<id>\d+)/priority\.json$', '/api-plus/staff/tickets/42/priority.json', array('42')),
+    array('^/api-plus/staff/tickets/(?P<id>\d+)/topic\.json$', '/api-plus/staff/tickets/42/topic.json', array('42')),
     array('^/api-plus/staff/tickets/(?P<id>\d+)\.json$', '/api-plus/staff/tickets/99.json', array('99')),
     array('^/api-plus/staff/tickets\.json$', '/api-plus/staff/tickets.json', array()),
     array('^/api-plus/tickets/(?P<number>[^/]+)\.json$', '/api-plus/tickets/23832.json', array('23832')),
@@ -69,7 +112,6 @@ foreach ($routes as $row) {
         fail("no match for $path via $regex");
         continue;
     }
-    // Mimic osTicket UrlMatcher: drop named keys and full match
     $numeric = array();
     foreach ($m as $k => $v) {
         if (is_int($k)) {
