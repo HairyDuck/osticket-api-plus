@@ -4,6 +4,8 @@ Open-source plugin that extends the stock osTicket HTTP API so you can **list**,
 
 Clean-room implementation. Not affiliated with Nitemare Labs or any paid plugin.
 
+Repository (private while in progress): https://github.com/HairyDuck/osticket-api-plus
+
 **MIT licensed.**
 
 ## Production safety

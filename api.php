@@ -345,18 +345,29 @@ class OsticketApiPlusController extends ApiController
 
     private function requireUserApiEnabled()
     {
-        $conf = OsticketApiPlusPlugin::conf();
-        if (!$conf || !$conf->get('enable_user_api')) {
+        if (!$this->configEnabled('enable_user_api')) {
             $this->json(403, array('error' => 'User API is disabled'));
         }
     }
 
     private function requireStaffApiEnabled()
     {
-        $conf = OsticketApiPlusPlugin::conf();
-        if (!$conf || !$conf->get('enable_staff_api')) {
+        if (!$this->configEnabled('enable_staff_api')) {
             $this->json(403, array('error' => 'Staff API is disabled'));
         }
+    }
+
+    /**
+     * PluginConfig booleans are often stored as "0"/"1" strings.
+     */
+    private function configEnabled($key)
+    {
+        $conf = OsticketApiPlusPlugin::conf();
+        if (!$conf) {
+            return false;
+        }
+        $value = $conf->get($key);
+        return $value === true || $value === 1 || $value === '1';
     }
 
     /**
@@ -491,8 +502,8 @@ class OsticketApiPlusController extends ApiController
         if ($withThread) {
             $data['thread'] = array();
             $thread = $ticket->getThread();
-            if ($thread) {
-                foreach ($thread->getEntries()->all() as $entry) {
+            if ($thread && ($entries = $thread->getEntries())) {
+                foreach ($entries as $entry) {
                     $body = $entry->getBody();
                     $text = is_object($body) ? (string) $body : (string) $body;
                     $data['thread'][] = array(
