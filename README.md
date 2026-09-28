@@ -2,7 +2,7 @@
 
 **osTicket REST API plugin** that adds the missing ticket endpoints the stock HTTP API never shipped.
 
-Create tickets with core osTicket. **List, view, reply, assign, close, and automate** them with API Plus. Same `X-API-Key` auth. No core file patches. MIT licensed.
+Create tickets with core osTicket. **List, view, reply, assign, close, download attachments, and automate** them with API Plus. Same `X-API-Key` auth. No core file patches. MIT licensed.
 
 [![Licence](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 [![osTicket](https://img.shields.io/badge/osTicket-1.17%2B%20%7C%201.18%2B-brightgreen.svg)](#requirements)
@@ -23,6 +23,7 @@ Stock osTicket only exposes **ticket creation** over HTTP (`POST /api/tickets.js
 | Create ticket | Yes | Yes (unchanged) |
 | List / search tickets | No | Yes |
 | Get ticket + thread | No | Yes |
+| List / download attachments | No | Yes |
 | User reply by email scope | No | Yes |
 | Staff reply / note / status | No | Yes |
 | Assign / claim | No | Yes |
@@ -41,6 +42,7 @@ Ideal for: **osTicket automation**, Zapier/Make-style workflows, internal tools,
 - **Public ticket number routes** – operate on `#12345`, not only internal ids
 - **Catalogues** – statuses, departments, staff directory, canned responses, priorities, help topics
 - **Rich list filters** – open/closed/all, status id/name, department, topic, priority, `updated_since`, pagination with `total` / `has_more`
+- **Attachments** – metadata on ticket read; Base64 download by `file_id` (staff and user-scoped)
 - **Production-safe** – plugin-only install; stock create path untouched; staff API off by default
 - **Same auth as core** – `X-API-Key` + allowed IP
 
@@ -63,7 +65,9 @@ Ideal for: **osTicket automation**, Zapier/Make-style workflows, internal tools,
    - Set **Staff username**, then enable **staff API**
 4. Use an API key whose IP matches the machine calling the API.
 
-Upgrade from 1.0.x: replace the plugin files, keep the instance enabled, then hit `/api-plus/health.json` to confirm `version` is `1.1.0`.
+Upgrade from 1.1.x: replace the plugin files, keep the instance enabled, then hit `/api-plus/health.json` to confirm `version` is `1.2.0`.
+
+Upgrade from 1.0.x: same replace; confirm `version` is `1.2.0`.
 
 ---
 
@@ -131,6 +135,13 @@ curl -sS -H "X-API-Key: YOUR_KEY" \
   "https://support.example.com/api/http.php/api-plus/tickets/12345.json?email=user@example.com"
 ```
 
+Thread entries include an `attachments` array (metadata only). Download content:
+
+```bash
+curl -sS -H "X-API-Key: YOUR_KEY" \
+  "https://support.example.com/api/http.php/api-plus/tickets/12345/attachments/29.json?email=user@example.com"
+```
+
 ### Post a user reply
 
 ```bash
@@ -178,6 +189,25 @@ curl -sS -H "X-API-Key: YOUR_KEY" \
 curl -sS -H "X-API-Key: YOUR_KEY" \
   "https://support.example.com/api/http.php/api-plus/staff/tickets/by-number/12345.json"
 ```
+
+Full ticket responses include:
+
+- `thread[].attachments` – per-entry metadata (`id`, `file_id`, `filename`, `size`, `mime_type`, `inline`)
+- `attachments` – flat list of the same metadata with `entry_id` for convenience
+
+### Download an attachment
+
+Use `file_id` from the ticket response. Content is Base64-encoded JSON (25 MiB limit). The file must belong to that ticket.
+
+```bash
+curl -sS -H "X-API-Key: YOUR_KEY" \
+  "https://support.example.com/api/http.php/api-plus/staff/tickets/42/attachments/29.json"
+
+curl -sS -H "X-API-Key: YOUR_KEY" \
+  "https://support.example.com/api/http.php/api-plus/staff/tickets/by-number/12345/attachments/29.json"
+```
+
+Response fields: `file_id`, `filename`, `mime_type`, `size`, `encoding` (`base64`), `content`, plus `ticket_id` / `entry_id`.
 
 ### Reply, status, note
 
@@ -268,7 +298,7 @@ Use catalogue ids when assigning, setting priority/topic, or filtering lists.
 
 These are **not implemented yet**. Open an issue or pull request if you need them:
 
-- Attachments (list, upload on reply, download)
+- Attachment upload on reply / note
 - Subject / requester email search (`q=`)
 - Collaborators / CC management
 - Ticket merge / related links

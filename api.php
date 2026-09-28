@@ -17,6 +17,8 @@ require_once INCLUDE_DIR . 'class.team.php';
 require_once INCLUDE_DIR . 'class.canned.php';
 require_once INCLUDE_DIR . 'class.topic.php';
 require_once INCLUDE_DIR . 'class.priority.php';
+require_once INCLUDE_DIR . 'class.file.php';
+require_once INCLUDE_DIR . 'class.attachment.php';
 
 class OsticketApiPlusController extends ApiController
 {
@@ -104,6 +106,27 @@ class OsticketApiPlusController extends ApiController
 
         $this->requireGet();
         return $this->json(200, $this->serializeTicket($ticket, true));
+    }
+
+    /**
+     * GET /api-plus/tickets/{number}/attachments/{file_id}.json?email=
+     */
+    public function userDownloadAttachment($number, $fileId)
+    {
+        $this->requireGet();
+        $this->requireApiKey();
+        $this->requireUserApiEnabled();
+
+        $email = $this->queryEmail();
+        $ticket = $this->lookupTicketByNumber($number);
+        if (!$ticket) {
+            return $this->json(404, array('error' => 'Ticket not found'));
+        }
+        if (!$this->ticketOwnedByEmail($ticket, $email)) {
+            return $this->json(403, array('error' => 'Ticket does not belong to this email'));
+        }
+
+        return $this->downloadAttachmentResolved($ticket, $fileId);
     }
 
     /**
@@ -201,6 +224,37 @@ class OsticketApiPlusController extends ApiController
         }
         $this->requireGet();
         return $this->json(200, $this->serializeTicket($ticket, true));
+    }
+
+    /**
+     * GET /api-plus/staff/tickets/{id}/attachments/{file_id}.json
+     */
+    public function staffDownloadAttachment($id, $fileId)
+    {
+        return $this->staffDownloadAttachmentResolved(
+            $this->requireStaffTicketById($id),
+            $fileId
+        );
+    }
+
+    /**
+     * GET /api-plus/staff/tickets/by-number/{number}/attachments/{file_id}.json
+     */
+    public function staffDownloadAttachmentByNumber($number, $fileId)
+    {
+        return $this->staffDownloadAttachmentResolved(
+            $this->requireStaffTicketByNumber($number),
+            $fileId
+        );
+    }
+
+    private function staffDownloadAttachmentResolved($ticket, $fileId)
+    {
+        if (!($ticket instanceof Ticket)) {
+            return $ticket;
+        }
+        $this->requireGet();
+        return $this->downloadAttachmentResolved($ticket, $fileId);
     }
 
     public function staffReply($id)
@@ -1076,23 +1130,197 @@ class OsticketApiPlusController extends ApiController
 
         if ($withThread) {
             $data['thread'] = array();
+            $data['attachments'] = array();
             $thread = $ticket->getThread();
             if ($thread && ($entries = $thread->getEntries())) {
                 foreach ($entries as $entry) {
                     $body = $entry->getBody();
                     $text = is_object($body) ? (string) $body : (string) $body;
+                    $attachments = $this->serializeEntryAttachments($entry);
+                    $entryId = (int) $entry->getId();
                     $data['thread'][] = array(
-                        'id'      => (int) $entry->getId(),
-                        'type'    => (string) $entry->getType(),
-                        'poster'  => (string) $entry->getPoster(),
-                        'body'    => $text,
-                        'created' => (string) $entry->getCreateDate(),
+                        'id'               => $entryId,
+                        'type'             => (string) $entry->getType(),
+                        'poster'           => (string) $entry->getPoster(),
+                        'body'             => $text,
+                        'created'          => (string) $entry->getCreateDate(),
+                        'attachments'      => $attachments,
+                        'attachment_count' => count($attachments),
                     );
+                    foreach ($attachments as $att) {
+                        $summary = $att;
+                        $summary['entry_id'] = $entryId;
+                        $data['attachments'][] = $summary;
+                    }
                 }
             }
         }
 
         return $data;
+    }
+
+    /**
+     * @return array
+     */
+    private function serializeEntryAttachments($entry)
+    {
+        $out = array();
+        if (!is_object($entry) || !method_exists($entry, 'getAttachments')) {
+            return $out;
+        }
+
+        $attachments = $entry->getAttachments();
+        if (!$attachments) {
+            return $out;
+        }
+
+        foreach ($attachments as $att) {
+            if (!is_object($att)) {
+                continue;
+            }
+            $file = method_exists($att, 'getFile') ? $att->getFile() : null;
+            if (!$file) {
+                continue;
+            }
+            $fileId = method_exists($att, 'getFileId')
+                ? (int) $att->getFileId()
+                : (method_exists($file, 'getId') ? (int) $file->getId() : 0);
+            if ($fileId < 1) {
+                continue;
+            }
+            $filename = method_exists($att, 'getFilename')
+                ? (string) $att->getFilename()
+                : (method_exists($file, 'getName') ? (string) $file->getName() : '');
+            $out[] = array(
+                'id'        => method_exists($att, 'getId') ? (int) $att->getId() : null,
+                'file_id'   => $fileId,
+                'filename'  => $filename,
+                'size'      => method_exists($file, 'getSize') ? (int) $file->getSize() : null,
+                'mime_type' => method_exists($file, 'getMimeType')
+                    ? (string) $file->getMimeType()
+                    : (method_exists($file, 'getType') ? (string) $file->getType() : null),
+                'inline'    => !empty($att->inline),
+            );
+        }
+
+        return $out;
+    }
+
+    /**
+     * Locate an attachment on a ticket thread by file id.
+     *
+     * @return array|null [ThreadEntry $entry, Attachment $att, AttachmentFile $file]
+     */
+    private function findAttachmentOnTicket(Ticket $ticket, $fileId)
+    {
+        $fileId = (int) $fileId;
+        if ($fileId < 1) {
+            return null;
+        }
+
+        $thread = $ticket->getThread();
+        if (!$thread || !($entries = $thread->getEntries())) {
+            return null;
+        }
+
+        foreach ($entries as $entry) {
+            if (!method_exists($entry, 'getAttachments')) {
+                continue;
+            }
+            $attachments = $entry->getAttachments();
+            if (!$attachments) {
+                continue;
+            }
+            foreach ($attachments as $att) {
+                if (!is_object($att) || !method_exists($att, 'getFileId')) {
+                    continue;
+                }
+                if ((int) $att->getFileId() !== $fileId) {
+                    continue;
+                }
+                $file = method_exists($att, 'getFile') ? $att->getFile() : null;
+                if (!$file) {
+                    continue;
+                }
+                return array($entry, $att, $file);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Read file bytes via storage backend in chunks (avoids AttachmentFile::getData side effects).
+     *
+     * @return string|false|null string on success, false on read error, null if over size limit
+     */
+    private function readAttachmentFileData($file)
+    {
+        $maxBytes = 25 * 1024 * 1024;
+        try {
+            if (!method_exists($file, 'open')) {
+                return false;
+            }
+            $bk = $file->open();
+            if (!$bk || !method_exists($bk, 'read')) {
+                return false;
+            }
+
+            $data = '';
+            while (true) {
+                $chunk = $bk->read();
+                if ($chunk === false || $chunk === null || $chunk === '') {
+                    break;
+                }
+                $data .= $chunk;
+                if (strlen($data) > $maxBytes) {
+                    return null;
+                }
+            }
+
+            return $data;
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
+    private function downloadAttachmentResolved(Ticket $ticket, $fileId)
+    {
+        $found = $this->findAttachmentOnTicket($ticket, $fileId);
+        if (!$found) {
+            return $this->json(404, array('error' => 'Attachment not found on this ticket'));
+        }
+
+        list($entry, $att, $file) = $found;
+        $bytes = $this->readAttachmentFileData($file);
+        if ($bytes === null) {
+            return $this->json(413, array(
+                'error' => 'Attachment exceeds the 25 MiB API download limit',
+            ));
+        }
+        if ($bytes === false) {
+            return $this->json(500, array('error' => 'Unable to read attachment data'));
+        }
+
+        $filename = method_exists($att, 'getFilename')
+            ? (string) $att->getFilename()
+            : (method_exists($file, 'getName') ? (string) $file->getName() : 'attachment');
+        $mime = method_exists($file, 'getMimeType')
+            ? (string) $file->getMimeType()
+            : (method_exists($file, 'getType') ? (string) $file->getType() : 'application/octet-stream');
+
+        return $this->json(200, array(
+            'ticket_id' => (int) $ticket->getId(),
+            'number'    => (string) $ticket->getNumber(),
+            'entry_id'  => (int) $entry->getId(),
+            'id'        => method_exists($att, 'getId') ? (int) $att->getId() : null,
+            'file_id'   => (int) $fileId,
+            'filename'  => $filename,
+            'mime_type' => $mime,
+            'size'      => strlen($bytes),
+            'encoding'  => 'base64',
+            'content'   => base64_encode($bytes),
+        ));
     }
 
     private function readJsonBody($required = true)

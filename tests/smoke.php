@@ -46,10 +46,10 @@ if (!is_array($plugin) || empty($plugin['plugin'])) {
 } else {
     ok('plugin.php metadata');
 }
-if (empty($plugin['version']) || $plugin['version'] !== '1.1.0') {
-    fail('plugin version expected 1.1.0');
+if (empty($plugin['version']) || $plugin['version'] !== '1.2.0') {
+    fail('plugin version expected 1.2.0');
 } else {
-    ok('plugin version 1.1.0');
+    ok('plugin version 1.2.0');
 }
 if (stripos(json_encode($plugin), 'synthetix') !== false) {
     fail('plugin metadata must not mention Synthetix');
@@ -82,6 +82,7 @@ $routes = array(
     array('^/api-plus/staff/canned\.json$', '/api-plus/staff/canned.json', array()),
     array('^/api-plus/staff/priorities\.json$', '/api-plus/staff/priorities.json', array()),
     array('^/api-plus/staff/topics\.json$', '/api-plus/staff/topics.json', array()),
+    array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/attachments/(?P<file_id>\d+)\.json$', '/api-plus/staff/tickets/by-number/23833/attachments/29.json', array('23833', '29')),
     array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/reply\.json$', '/api-plus/staff/tickets/by-number/23833/reply.json', array('23833')),
     array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/status\.json$', '/api-plus/staff/tickets/by-number/23833/status.json', array('23833')),
     array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/note\.json$', '/api-plus/staff/tickets/by-number/23833/note.json', array('23833')),
@@ -89,6 +90,7 @@ $routes = array(
     array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/priority\.json$', '/api-plus/staff/tickets/by-number/23833/priority.json', array('23833')),
     array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/topic\.json$', '/api-plus/staff/tickets/by-number/23833/topic.json', array('23833')),
     array('^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)\.json$', '/api-plus/staff/tickets/by-number/23833.json', array('23833')),
+    array('^/api-plus/staff/tickets/(?P<id>\d+)/attachments/(?P<file_id>\d+)\.json$', '/api-plus/staff/tickets/42/attachments/29.json', array('42', '29')),
     array('^/api-plus/staff/tickets/(?P<id>\d+)/reply\.json$', '/api-plus/staff/tickets/42/reply.json', array('42')),
     array('^/api-plus/staff/tickets/(?P<id>\d+)/status\.json$', '/api-plus/staff/tickets/42/status.json', array('42')),
     array('^/api-plus/staff/tickets/(?P<id>\d+)/note\.json$', '/api-plus/staff/tickets/7/note.json', array('7')),
@@ -97,6 +99,7 @@ $routes = array(
     array('^/api-plus/staff/tickets/(?P<id>\d+)/topic\.json$', '/api-plus/staff/tickets/42/topic.json', array('42')),
     array('^/api-plus/staff/tickets/(?P<id>\d+)\.json$', '/api-plus/staff/tickets/99.json', array('99')),
     array('^/api-plus/staff/tickets\.json$', '/api-plus/staff/tickets.json', array()),
+    array('^/api-plus/tickets/(?P<number>[^/]+)/attachments/(?P<file_id>\d+)\.json$', '/api-plus/tickets/23832/attachments/29.json', array('23832', '29')),
     array('^/api-plus/tickets/(?P<number>[^/]+)\.json$', '/api-plus/tickets/23832.json', array('23832')),
     array('^/api-plus/tickets\.json$', '/api-plus/tickets.json', array()),
 );

@@ -162,6 +162,12 @@ class OsticketApiPlusPlugin extends Plugin
             );
             $dispatcher->append(
                 url_get(
+                    '^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)/attachments/(?P<file_id>\d+)\.json$',
+                    array('OsticketApiPlusController', 'staffDownloadAttachmentByNumber')
+                )
+            );
+            $dispatcher->append(
+                url_get(
                     '^/api-plus/staff/tickets/by-number/(?P<number>[^/]+)\.json$',
                     array('OsticketApiPlusController', 'staffGetTicketByNumber')
                 )
@@ -206,6 +212,12 @@ class OsticketApiPlusPlugin extends Plugin
             );
             $dispatcher->append(
                 url_get(
+                    '^/api-plus/staff/tickets/(?P<id>\d+)/attachments/(?P<file_id>\d+)\.json$',
+                    array('OsticketApiPlusController', 'staffDownloadAttachment')
+                )
+            );
+            $dispatcher->append(
+                url_get(
                     '^/api-plus/staff/tickets/(?P<id>\d+)\.json$',
                     array('OsticketApiPlusController', 'staffGetTicket')
                 )
@@ -214,6 +226,14 @@ class OsticketApiPlusPlugin extends Plugin
                 url_get(
                     '^/api-plus/staff/tickets\.json$',
                     array('OsticketApiPlusController', 'staffListTickets')
+                )
+            );
+
+            // User-scoped: attachment download before ticket-number catch-all
+            $dispatcher->append(
+                url_get(
+                    '^/api-plus/tickets/(?P<number>[^/]+)/attachments/(?P<file_id>\d+)\.json$',
+                    array('OsticketApiPlusController', 'userDownloadAttachment')
                 )
             );
 
