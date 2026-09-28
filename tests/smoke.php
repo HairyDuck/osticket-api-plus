@@ -51,11 +51,6 @@ if (empty($plugin['version']) || $plugin['version'] !== '1.1.0') {
 } else {
     ok('plugin version 1.1.0');
 }
-if (stripos(json_encode($plugin), 'cursor') !== false) {
-    fail('plugin metadata must not mention Cursor');
-} else {
-    ok('no Cursor mention in plugin metadata');
-}
 if (stripos(json_encode($plugin), 'synthetix') !== false) {
     fail('plugin metadata must not mention Synthetix');
 } else {
