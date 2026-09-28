@@ -49,39 +49,39 @@ class OsticketApiPlusPlugin extends Plugin
                 return;
             }
 
-            // Staff (specific paths first)
+            // Staff (specific paths first). Method-locked so GET cannot hit reply/status/note.
             $dispatcher->append(
-                url(
+                url_post(
                     '^/api-plus/staff/tickets/(?P<id>\d+)/reply\.json$',
                     array('OsticketApiPlusController', 'staffReply')
                 )
             );
             $dispatcher->append(
-                url(
+                url_post(
                     '^/api-plus/staff/tickets/(?P<id>\d+)/status\.json$',
                     array('OsticketApiPlusController', 'staffStatus')
                 )
             );
             $dispatcher->append(
-                url(
+                url_post(
                     '^/api-plus/staff/tickets/(?P<id>\d+)/note\.json$',
                     array('OsticketApiPlusController', 'staffNote')
                 )
             );
             $dispatcher->append(
-                url(
+                url_get(
                     '^/api-plus/staff/tickets/(?P<id>\d+)\.json$',
                     array('OsticketApiPlusController', 'staffGetTicket')
                 )
             );
             $dispatcher->append(
-                url(
+                url_get(
                     '^/api-plus/staff/tickets\.json$',
                     array('OsticketApiPlusController', 'staffListTickets')
                 )
             );
 
-            // User-scoped
+            // User-scoped: GET and POST share the ticket-number URL
             $dispatcher->append(
                 url(
                     '^/api-plus/tickets/(?P<number>[^/]+)\.json$',
@@ -89,7 +89,7 @@ class OsticketApiPlusPlugin extends Plugin
                 )
             );
             $dispatcher->append(
-                url(
+                url_get(
                     '^/api-plus/tickets\.json$',
                     array('OsticketApiPlusController', 'userListTickets')
                 )

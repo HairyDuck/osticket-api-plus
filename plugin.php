@@ -16,6 +16,6 @@ return array(
     'name'        => 'osTicket API Plus',
     'author'      => 'osTicket API Plus contributors',
     'description' => 'Adds REST endpoints to list, view, reply to, and update tickets via the stock API key. Does not modify core osTicket files.',
-    'url'         => 'https://github.com/osticket-api-plus/osticket-api-plus',
+    'url'         => 'https://github.com/HairyDuck/osticket-api-plus',
     'plugin'      => 'osticket-api-plus.php:OsticketApiPlusPlugin',
 );
