@@ -103,6 +103,10 @@ curl -sS -H "X-API-Key: YOUR_KEY" \
 curl -sS -X POST -H "X-API-Key: YOUR_KEY" -H "Content-Type: application/json" \
   -d "{\"message\":\"Thanks – this is resolved.\",\"status\":\"closed\",\"alert\":true}" \
   "https://support.example.com/api/http.php/api-plus/staff/tickets/by-number/12345/reply.json"
+
+# Staff: download attachment (file_id from ticket response)
+curl -sS -H "X-API-Key: YOUR_KEY" \
+  "https://support.example.com/api/http.php/api-plus/staff/tickets/by-number/12345/attachments/29.json"
 ```
 
 ---
@@ -310,11 +314,26 @@ Community contributions welcome under the MIT licence.
 
 ---
 
+## Changelog
+
+### 1.2.0
+
+- Attachment metadata on ticket read (`thread[].attachments` and flat `attachments`)
+- Base64 attachment download by `file_id` (staff id/number routes and user-scoped)
+- Docs: Quick start download example; layout metadata version `1.2.0`
+
+### 1.1.0
+
+- Richer staff API (catalogues, assign, priority, topic, notes, status)
+- SEO-friendly README and production rollout checklist
+
+---
+
 ## Layout
 
 ```text
 osticket-api-plus/
-  plugin.php              Metadata (version 1.1.0)
+  plugin.php              Metadata (version 1.2.0)
   osticket-api-plus.php   Bootstrap + route registration
   config.php              Admin settings
   api.php                 Controllers

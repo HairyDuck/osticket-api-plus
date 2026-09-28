@@ -51,6 +51,11 @@ if (empty($plugin['version']) || $plugin['version'] !== '1.2.0') {
 } else {
     ok('plugin version 1.2.0');
 }
+if (stripos(json_encode($plugin), 'cursor') !== false) {
+    fail('plugin metadata must not mention Cursor');
+} else {
+    ok('no Cursor mention in plugin metadata');
+}
 if (stripos(json_encode($plugin), 'synthetix') !== false) {
     fail('plugin metadata must not mention Synthetix');
 } else {
@@ -66,7 +71,24 @@ if ($readme === false) {
     } else {
         ok('README consider-if-requested section');
     }
-    if (stripos($readme, 'synthetix') !== false) {
+    if (stripos($readme, '## Changelog') === false || stripos($readme, '### 1.2.0') === false) {
+        fail('README missing Changelog 1.2.0');
+    } else {
+        ok('README Changelog 1.2.0');
+    }
+    if (strpos($readme, 'Metadata (version 1.2.0)') === false) {
+        fail('README layout version expected 1.2.0');
+    } else {
+        ok('README layout version 1.2.0');
+    }
+    if (stripos($readme, 'attachments/') === false) {
+        fail('README missing attachment download docs');
+    } else {
+        ok('README attachments docs');
+    }
+    if (stripos($readme, 'cursor') !== false) {
+        fail('README must not mention Cursor');
+    } elseif (stripos($readme, 'synthetix') !== false) {
         fail('README must not mention Synthetix');
     } else {
         ok('README brand-neutral');
