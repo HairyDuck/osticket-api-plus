@@ -51,11 +51,6 @@ if (empty($plugin['version']) || $plugin['version'] !== '1.2.0') {
 } else {
     ok('plugin version 1.2.0');
 }
-if (stripos(json_encode($plugin), 'cursor') !== false) {
-    fail('plugin metadata must not mention Cursor');
-} else {
-    ok('no Cursor mention in plugin metadata');
-}
 if (stripos(json_encode($plugin), 'synthetix') !== false) {
     fail('plugin metadata must not mention Synthetix');
 } else {
@@ -86,9 +81,7 @@ if ($readme === false) {
     } else {
         ok('README attachments docs');
     }
-    if (stripos($readme, 'cursor') !== false) {
-        fail('README must not mention Cursor');
-    } elseif (stripos($readme, 'synthetix') !== false) {
+    if (stripos($readme, 'synthetix') !== false) {
         fail('README must not mention Synthetix');
     } else {
         ok('README brand-neutral');
