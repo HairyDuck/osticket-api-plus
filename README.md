@@ -1,5 +1,9 @@
 # osTicket API Plus
 
+<p align="center">
+  <img src="assets/logo.svg" alt="osTicket API Plus" width="96" height="96">
+</p>
+
 **osTicket REST API plugin** that adds the missing ticket endpoints the stock HTTP API never shipped.
 
 Create tickets with core osTicket. **List, view, reply, assign, close, download attachments, and automate** them with API Plus. Same `X-API-Key` auth. No core file patches. MIT licensed.
@@ -338,6 +342,7 @@ osticket-api-plus/
   config.php              Admin settings
   api.php                 Controllers
   tests/smoke.php         Offline syntax + route checks
+  assets/logo.svg         Project logo
   LICENSE
   README.md
 ```

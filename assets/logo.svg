@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="osTicket API Plus">
+  <rect width="64" height="64" rx="14" fill="#0b1a2e"/>
+  <path d="M18 20v24M22 16v8M22 40v8" stroke="#7dd3fc" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M46 20v24M42 16v8M42 40v8" stroke="#7dd3fc" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <rect x="26" y="24" width="12" height="16" rx="2.5" fill="#38bdf8" fill-opacity="0.2" stroke="#38bdf8" stroke-width="2"/>
+  <path d="M29 32h6M32 29v6" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
